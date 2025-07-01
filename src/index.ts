@@ -244,8 +244,7 @@ export default function initFunctions({
   const deleteFileById = async (id: string) => {
     try {
       const { filePath } = await resolveFilePath(id);
-      const pathToFile = path.join(publicFolder, filePath);
-      fs.unlinkSync(pathToFile);
+      fs.unlinkSync(filePath);
     } catch (err) {
       throw new Error(err);
     }
