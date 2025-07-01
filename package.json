@@ -1,0 +1,43 @@
+{
+  "name": "sfs-node",
+  "version": "0.0.2",
+  "description": "Core of SFS for node.js",
+  "author": "brokeboiflex",
+  "keywords": [
+    "sfs"
+  ],
+  "type": "module",
+  "source": "src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.esm.js",
+  "unpkg": "./dist/index.umd.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.esm.js",
+    "require": "./dist/index.cjs",
+    "types": "./dist/index.d.ts"
+  },
+  "scripts": {
+    "build": "microbundle",
+    "dev": "microbundle watch"
+  },
+  "dependencies": {
+    "check-disk-space": "^3.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "file-type": "^18.7.0",
+    "sfs-file-type": "^1.0.22",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "microbundle": "^0.15.1",
+    "@types/express": "^5.0.3",
+    "@types/node": "^18.15.7",
+    "cross-env": "^7.0.3",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.0.2"
+  },
+  "license": "ISC"
+}

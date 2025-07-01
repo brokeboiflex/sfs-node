@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "NodeNext",
+    "outDir": "dist",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "strict": false,
+    "checkJs": true
+  },
+  "include": ["src/**/*.ts", "src/modules/customers/.resolvers.ts"],
+  "exclude": ["node_modules"]
+}
