@@ -106,7 +106,7 @@ export default function initFunctions({
   getFileById,
   getFileByHash,
   createFile,
-  logger,
+  logger = undefined,
   uid = uuidv4,
 }: sfsConfig) {
   /**
@@ -185,11 +185,11 @@ export default function initFunctions({
 
       // File exists
       if (fileInfo) {
-        logger("SFS: File already uploaded", "info");
+        logger && logger("SFS: File already uploaded", "info");
       }
       // File is new
       else {
-        logger("SFS: Saving file", "success");
+        logger && logger("SFS: Saving file", "success");
         await file.mv(constPath);
       }
       // File is new or doesnt exist in this folder
@@ -218,13 +218,13 @@ export default function initFunctions({
 
       // File exists in this folder
       else {
-        logger("File already exists at this location", "error");
+        logger && logger("File already exists at this location", "error");
         fileInfo.url = idToUrl(fileInfo.id);
 
         return fileInfo;
       }
     } catch (err) {
-      logger("Upload error", "error");
+      logger && logger("Upload error", "error");
       throw new Error(err);
     }
   };
