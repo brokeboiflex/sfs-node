@@ -72,6 +72,7 @@ export type sfsConfig = {
      * @returns A unique string or number.
      */
     uid?: () => string | number;
+    allowDuplicates?: boolean;
 };
 /**
  * Initializes core logic functions for the Simple File Storage (SFS) system.
@@ -84,10 +85,11 @@ export type sfsConfig = {
  * @param config.createFile - Async function that stores an `sfsFile` and returns the stored object.
  * @param config.logger - Optional logger function for internal operations. No logging if undefined.
  * @param config.uid - Optional function for generating unique IDs (defaults to `uuidv4` if not provided).
+ * @param config.allowDuplicates - Flag deterining whether to allow storing duplicate files in database, important for clientside optimistic uploads
  *
  * @returns An object containing internal logic functions used by the SFS system.
  */
-export default function initFunctions({ publicFolder, mask, getFileById, getFileByHash, createFile, logger, uid, }: sfsConfig): {
+export default function initFunctions({ publicFolder, mask, getFileById, getFileByHash, createFile, logger, uid, allowDuplicates, }: sfsConfig): {
     resolveFilePath: (id: sfsFileId) => Promise<{
         filePath: string;
         fileName: string;

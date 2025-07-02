@@ -84,6 +84,8 @@ export type sfsConfig = {
    * @returns A unique string or number.
    */
   uid?: () => string | number;
+
+  allowDuplicates?: boolean;
 };
 
 /**
@@ -97,6 +99,7 @@ export type sfsConfig = {
  * @param config.createFile - Async function that stores an `sfsFile` and returns the stored object.
  * @param config.logger - Optional logger function for internal operations. No logging if undefined.
  * @param config.uid - Optional function for generating unique IDs (defaults to `uuidv4` if not provided).
+ * @param config.allowDuplicates - Flag deterining whether to allow storing duplicate files in database, important for clientside optimistic uploads
  *
  * @returns An object containing internal logic functions used by the SFS system.
  */
@@ -110,6 +113,7 @@ export default function initFunctions({
   createFile,
   logger = undefined,
   uid = uuidv4,
+  allowDuplicates = false,
 }: sfsConfig) {
   /**
    * Converts a URL to its corresponding file ID by removing the mask prefix.
@@ -203,8 +207,8 @@ export default function initFunctions({
         logger && logger("SFS: Saving file", "success");
         await file.mv(constPath);
       }
-      // File is new or doesnt exist in this folder
-      if (!!!fileInfo || filePath !== fileInfo.path) {
+      // File is new or doesnt exist in this folder or duplocates are allowed
+      if (!!!fileInfo || filePath !== fileInfo.path || allowDuplicates) {
         const size = fileInfo?.size || fs.statSync(constPath).size;
         const type = fileInfo?.type || dotExtensionToCategotry(extension);
         const now = Date.now();
