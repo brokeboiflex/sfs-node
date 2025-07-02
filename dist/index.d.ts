@@ -94,7 +94,7 @@ export default function initFunctions({ publicFolder, mask, getFileById, getFile
     }>;
     idToUrl: (id: sfsFileId) => string;
     urlToId: (url: string) => string;
-    saveFile: (file: UploadedFile, filePath: string) => Promise<sfsFile>;
+    saveFile: (file: UploadedFile, filePath?: string, id?: sfsFileId) => Promise<sfsFile>;
     deleteFileByHash: (hash: string) => Promise<void>;
     deleteFileById: (id: string) => Promise<void>;
     getDiskUsage: (req: any, res: any) => Promise<import("check-disk-space").DiskSpace>;

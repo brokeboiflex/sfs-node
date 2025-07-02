@@ -100,6 +100,8 @@ export type sfsConfig = {
  *
  * @returns An object containing internal logic functions used by the SFS system.
  */
+
+//TODO  Turn it into a class
 export default function initFunctions({
   publicFolder,
   mask,
