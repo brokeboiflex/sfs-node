@@ -163,7 +163,16 @@ export default function initFunctions({
    *
    * @throws Will throw if file saving or metadata operations fail.
    */
-  const saveFile = async (file: UploadedFile, filePath: string) => {
+
+  // TODO | ALL properties other than file shouls be optional
+  // TODO | Reimplement temp folder for hash calculation
+  // TODO | Support user defined hashing methods
+
+  const saveFile = async (
+    file: UploadedFile,
+    filePath: string = "/",
+    id: sfsFileId = uid()
+  ) => {
     try {
       // Save file
       const name = decodeURI(file.name);
@@ -196,17 +205,17 @@ export default function initFunctions({
       if (!!!fileInfo || filePath !== fileInfo.path) {
         const size = fileInfo?.size || fs.statSync(constPath).size;
         const type = fileInfo?.type || dotExtensionToCategotry(extension);
-
+        const now = Date.now();
         const fileData = {
-          id: uid(),
+          id,
           name,
           extension,
           hash,
           size,
           type,
-          last_modified: Date.now(),
+          last_modified: now,
           path: filePath,
-          publishedAt: Date.now(),
+          publishedAt: now,
         };
 
         const mutationResult = await createFile(fileData);
