@@ -3,4 +3,4 @@ public/*
 temp/*
 .env
 database.db
-dist/*
+dist

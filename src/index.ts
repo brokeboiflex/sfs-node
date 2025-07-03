@@ -146,11 +146,13 @@ export default function initFunctions({
    *          or `undefined` if the file was not found.
    */
   const resolveFilePath = async (id: sfsFileId) => {
-    const fileInfo = await getFileById(id);
-    if (fileInfo) {
+    try {
+      const fileInfo = await getFileById(id);
       const { hash, extension, name } = fileInfo;
       const filePath = hash + extension;
       return { filePath: path.join(publicFolder, filePath), fileName: name };
+    } catch (err) {
+      logger && logger(err, "error");
     }
   };
 
