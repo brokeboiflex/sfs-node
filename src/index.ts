@@ -4,7 +4,6 @@ import checkDiskSpace from "check-disk-space";
 import { createHash } from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import { dotExtensionToCategotry, sfsFileType } from "sfs-file-type";
-import { fileTypeFromBuffer } from "file-type";
 
 export interface UploadedFile {
   /** file name */
@@ -87,6 +86,7 @@ export type sfsConfig = {
   uid?: () => string | number;
 
   allowDuplicates?: boolean;
+  cleanupOnFailedUpload?: boolean;
 };
 
 /**
@@ -105,7 +105,6 @@ export type sfsConfig = {
  * @returns An object containing internal logic functions used by the SFS system.
  */
 
-//TODO  Turn it into a class
 export default function initFunctions({
   publicFolder,
   mask,
@@ -115,6 +114,7 @@ export default function initFunctions({
   logger = undefined,
   uid = uuidv4,
   allowDuplicates = false,
+  cleanupOnFailedUpload = false,
 }: sfsConfig) {
   /**
    * Converts a URL to its corresponding file ID by removing the mask prefix.
@@ -170,22 +170,23 @@ export default function initFunctions({
    * @param options - Optional configuration object.
    * @param options.filePath - Logical file path (or folder-relative path) for storing metadata. Defaults to "/".
    * @param options.id - Custom file ID. If not provided, a unique ID will be generated using `uid()`.
-   * @param options.additionalData - Additional metadata to store with the file.
+   * @param options.additionalFields - Additional metadata to store with the file.
    * @returns An `sfsFile` object with generated ID and public URL.
    *
    * @throws Will throw if file saving or metadata operations fail.
    */
 
-  // TODO | ALL properties other than file shouls be optional
-  // TODO | Reimplement temp folder for hash calculation
-  // TODO | Support user defined hashing methods
+  const getFileTypeFromBuffer = async (fileData: Uint8Array | ArrayBuffer) => {
+    const { fileTypeFromBuffer } = await import("file-type");
+    return await fileTypeFromBuffer(fileData);
+  };
 
   const saveFile = async (
     file: UploadedFile,
     options?: {
       filePath?: string;
       id?: sfsFileId;
-      additionalData?: any;
+      additionalFields?: any;
     }
   ) => {
     try {
@@ -202,7 +203,7 @@ export default function initFunctions({
       if (extensionFromName) {
         extension = extensionFromName;
       } else {
-        const filetype = await fileTypeFromBuffer(file.data);
+        const filetype = await getFileTypeFromBuffer(file.data);
         if (filetype) {
           extension = `.${filetype.ext}`;
         }
@@ -235,7 +236,7 @@ export default function initFunctions({
           last_modified: now,
           path: filePath,
           publishedAt: now,
-          ...options?.additionalData,
+          ...options?.additionalFields,
         };
 
         try {
@@ -244,7 +245,7 @@ export default function initFunctions({
           return mutationResult;
         } catch (createError) {
           // Cleanup: Remove the physical file if database operation failed
-          if (!fileInfo && fs.existsSync(constPath)) {
+          if (cleanupOnFailedUpload && !fileInfo) {
             fs.unlinkSync(constPath);
             logger &&
               logger(

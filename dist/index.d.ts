@@ -28,6 +28,7 @@ export type sfsFile = {
     last_modified: number;
     path: string;
     url?: string;
+    [key: string]: any;
 };
 export type loggerLvl = "info" | "success" | "error";
 /**
@@ -73,6 +74,7 @@ export type sfsConfig = {
      */
     uid?: () => string | number;
     allowDuplicates?: boolean;
+    cleanupOnFailedUpload?: boolean;
 };
 /**
  * Initializes core logic functions for the Simple File Storage (SFS) system.
@@ -89,14 +91,18 @@ export type sfsConfig = {
  *
  * @returns An object containing internal logic functions used by the SFS system.
  */
-export default function initFunctions({ publicFolder, mask, getFileById, getFileByHash, createFile, logger, uid, allowDuplicates, }: sfsConfig): {
+export default function initFunctions({ publicFolder, mask, getFileById, getFileByHash, createFile, logger, uid, allowDuplicates, cleanupOnFailedUpload, }: sfsConfig): {
     resolveFilePath: (id: sfsFileId) => Promise<{
         filePath: string;
         fileName: string;
     }>;
     idToUrl: (id: sfsFileId) => string;
     urlToId: (url: string) => string;
-    saveFile: (file: UploadedFile, filePath?: string, id?: sfsFileId) => Promise<sfsFile>;
+    saveFile: (file: UploadedFile, options?: {
+        filePath?: string;
+        id?: sfsFileId;
+        additionalFields?: any;
+    }) => Promise<sfsFile>;
     deleteFileByHash: (hash: string) => Promise<void>;
     deleteFileById: (id: string) => Promise<void>;
     getDiskUsage: (req: any, res: any) => Promise<import("check-disk-space").DiskSpace>;
