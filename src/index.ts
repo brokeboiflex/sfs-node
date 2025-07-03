@@ -34,6 +34,7 @@ export type sfsFile = {
   last_modified: number; //timestamp,
   path: string;
   url?: string;
+  [key: string]: any; // Allow additional dynamic properties
 };
 export type loggerLvl = "info" | "success" | "error";
 /**
@@ -281,7 +282,11 @@ export default function initFunctions({
   };
   const deleteFileById = async (id: string) => {
     try {
-      const { filePath } = await resolveFilePath(id);
+      const result = await resolveFilePath(id);
+      if (!result) {
+        throw new Error(`File with id ${id} not found`);
+      }
+      const { filePath } = result;
       fs.unlinkSync(filePath);
     } catch (err) {
       throw new Error(err);
