@@ -282,11 +282,7 @@ export default function initFunctions({
   };
   const deleteFileById = async (id: string) => {
     try {
-      const result = await resolveFilePath(id);
-      if (!result) {
-        throw new Error(`File with id ${id} not found`);
-      }
-      const { filePath } = result;
+      const { filePath } = await resolveFilePath(id);
       fs.unlinkSync(filePath);
     } catch (err) {
       throw new Error(err);
