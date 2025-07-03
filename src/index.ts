@@ -34,6 +34,7 @@ export type sfsFile = {
   last_modified: number; //timestamp,
   path: string;
   url?: string;
+  [key: string]: any; // Allow additional dynamic properties
 };
 export type loggerLvl = "info" | "success" | "error";
 /**
@@ -166,7 +167,10 @@ export default function initFunctions({
    * - Registers file metadata via `createFile`, or reuses existing entry.
    *
    * @param file - Uploaded file object (e.g., from express-fileupload).
-   * @param filePath - Logical file path (or folder-relative path) for storing metadata.
+   * @param options - Optional configuration object.
+   * @param options.filePath - Logical file path (or folder-relative path) for storing metadata. Defaults to "/".
+   * @param options.id - Custom file ID. If not provided, a unique ID will be generated using `uid()`.
+   * @param options.additionalData - Additional metadata to store with the file.
    * @returns An `sfsFile` object with generated ID and public URL.
    *
    * @throws Will throw if file saving or metadata operations fail.
@@ -178,10 +182,17 @@ export default function initFunctions({
 
   const saveFile = async (
     file: UploadedFile,
-    filePath: string = "/",
-    id: sfsFileId = uid()
+    options?: {
+      filePath?: string;
+      id?: sfsFileId;
+      additionalData?: any;
+    }
   ) => {
     try {
+      // Set default values
+      const filePath = options?.filePath || "/";
+      const id = options?.id || uid();
+
       // Save file
       const name = decodeURI(file.name);
       const hash = createHash("sha256").update(file.data).digest("hex");
@@ -224,13 +235,24 @@ export default function initFunctions({
           last_modified: now,
           path: filePath,
           publishedAt: now,
+          ...options?.additionalData,
         };
 
-        const mutationResult = await createFile(fileData);
-
-        mutationResult.url = idToUrl(mutationResult.id);
-
-        return mutationResult;
+        try {
+          const mutationResult = await createFile(fileData);
+          mutationResult.url = idToUrl(mutationResult.id);
+          return mutationResult;
+        } catch (createError) {
+          // Cleanup: Remove the physical file if database operation failed
+          if (!fileInfo && fs.existsSync(constPath)) {
+            fs.unlinkSync(constPath);
+            logger &&
+              logger(
+                "SFS: Cleaning up orphaned file after database error",
+                "info"
+              );
+          }
+        }
       }
 
       // File exists in this folder
